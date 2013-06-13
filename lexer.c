@@ -1194,6 +1194,23 @@ int lex_do(lex_file *lex)
         case '(':
         case ':':
         case '?':
+            if (ch == '(' && OPTS_OPTION_U32(OPTION_STANDARD) == COMPILER_HCODE) {
+                nextch = lex_getch(lex);
+                if (nextch == '+' || nextch == '-') {
+                    thirdch = lex_getch(lex);
+                    if (thirdch == ')') {
+                        lex_tokench(lex, ch);      /* (    */
+                        lex_tokench(lex, nextch);  /* -, + */
+                        lex_tokench(lex, thirdch); /* )    */
+                        lex_endtoken(lex);
+                        return (lex->tok.ttype = TOKEN_OPERATOR);
+                    } else {
+                        lex_ungetch(lex, thirdch);
+                    }
+                } else {
+                    lex_ungetch(lex, nextch);
+                }
+            }
             lex_tokench(lex, ch);
             lex_endtoken(lex);
             if (lex->flags.noops)

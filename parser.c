@@ -552,6 +552,7 @@ static bool parser_sy_apply_operator(parser_t *parser, shunt *sy)
     ast_value      *asvalue[3];
     ast_binstore   *asbinstore;
     size_t i, assignop, addop, subop;
+    size_t instr;
     qcint  generated_op = 0;
 
     char ty1[1024];
@@ -1430,6 +1431,9 @@ static bool parser_sy_apply_operator(parser_t *parser, shunt *sy)
                     return false;
             };
             break;
+
+        case opid3('(','+',')'): /* HCODE */
+        case opid3('(','-',')'): /* HCODE */
         case opid2('&','='):
         case opid2('|','='):
             if (NotSameType(TYPE_FLOAT)) {
@@ -1446,9 +1450,18 @@ static bool parser_sy_apply_operator(parser_t *parser, shunt *sy)
                 assignop = type_storep_instr[exprs[0]->vtype];
             else
                 assignop = type_store_instr[exprs[0]->vtype];
-            out = (ast_expression*)ast_binstore_new(ctx, assignop,
-                                                    (op->id == opid2('&','=') ? INSTR_BITAND : INSTR_BITOR),
-                                                    exprs[0], exprs[1]);
+
+            switch (op->id) {
+                case opid3('(','+',')'):
+                case opid2('|','='):
+                    instr = INSTR_BITOR;
+                    break;
+                case opid3('(','-',')'):
+                case opid2('&','='):
+                    instr = INSTR_BITAND;
+            }
+
+            out = (ast_expression*)ast_binstore_new(ctx, assignop, instr, exprs[0], exprs[1]);
             break;
         case opid3('&','~','='):
             /* This is like: a &= ~(b);

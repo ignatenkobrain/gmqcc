@@ -588,7 +588,10 @@ int main(int argc, char **argv) {
     } else if (OPTS_OPTION_U32(OPTION_STANDARD) == COMPILER_FTEQCC) {
         operators      = fte_operators;
         operator_count = fte_operator_count;
-    } else {
+    } else if (OPTS_OPTION_U32(OPTION_STANDARD) == COMPILER_HCODE) {
+        operators      = hcode_operators;
+        operator_count = hcode_operator_count;
+    } else { 
         operators      = qcc_operators;
         operator_count = qcc_operator_count;
     }
